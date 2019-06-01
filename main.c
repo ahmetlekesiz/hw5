@@ -219,13 +219,109 @@ void printList(song* ch, song* alp, song* dur){
 }
 
 void printChoice(){
-    printf("Enter your choice:\n");
-    printf("\t1 to insert a song into the list.\n");
-    printf("\t2 to delete a song from list.\n");
-    printf("\t3 to print the songs in the list.\n");
-    printf("\t4 to print the songs to an output file.\n");
-    printf("\t5 to end.\n");
+    int choice = 0;
+    char input[100];
+    char songName[25];
+    char duration[10];
+    char hour[3];
+    char min[3];
+    int h;
+    int m;
+    int dur;
+    char hourSingle[2];
+    char minSingle[2];
 
+
+
+    while(choice != 5){
+        printf("Enter your choice:\n");
+        printf("\t1 to insert a song into the list.\n");
+        printf("\t2 to delete a song from list.\n");
+        printf("\t3 to print the songs in the list.\n");
+        printf("\t4 to print the songs to an output file.\n");
+        printf("\t5 to end.\n");
+        scanf("%d", &choice);
+        getchar();
+        if(choice == 1){
+            printf("Enter a song name with duration:\n");
+            gets(input);
+            printf("%s", input);
+            char *piece = strtok(input, "\t");
+            strcpy(songName, piece);
+            piece = strtok(NULL, "\t");
+            strcpy(duration, piece);
+            char *secondPiece = strtok(piece, ":");
+            strcpy(hour, secondPiece);
+            secondPiece = strtok(NULL, ":");
+            strcpy(min, secondPiece);
+            if(hour[0]== '0'){
+                hourSingle[0] = hour[1];
+                hourSingle[1] = '\0';
+                h = atoi(hourSingle);
+            }else{
+                h = atoi(hour);
+            }
+            if(min[0]== '0'){
+                minSingle[0] = min[1];
+                minSingle[1] = '\0';
+                m = atoi(minSingle);
+            }else{
+                m = atoi(min);
+            }
+            dur = (60*h)+m;
+            insertNode(songName, dur);
+
+        }else if(choice == 2){
+            printf("Enter a song name:\n");
+            gets(input);
+            deleteNode(input);
+        }else if(choice == 3){
+            printList(chrono_head, alpha_head, duration_head);
+        }else if(choice == 4){
+            printf("Enter a file name:\n");
+            gets(input);
+            FILE * fp;
+            int i;
+            fp = fopen (input, "w");
+
+            int k = 1;
+            int hour = 0;
+            int min = 0;
+            fprintf(fp, "The list in chronological order:\n");
+            while(chrono_head!=NULL){
+                hour = chrono_head->duration / 60;
+                min = chrono_head->duration % 60;
+                fprintf(fp, "\t%d. %s %d:%d\n", k, chrono_head->songName, hour, min);
+                chrono_head = chrono_head->chrono_next;
+                k++;
+            }
+
+            k=1;
+            fprintf(fp, "The list in alphabetical order:\n");
+            while(alpha_head!=NULL){
+                hour = alpha_head->duration / 60;
+                min = alpha_head->duration % 60;
+                fprintf(fp, "\t%d. %s %d:%d\n", k, alpha_head->songName, hour, min);
+                alpha_head = alpha_head->alpha_next;
+                k++;
+            }
+
+            k=1;
+            fprintf(fp, "The list in duration-time order:\n");
+            while(duration_head!=NULL){
+                hour = duration_head->duration / 60;
+                min = duration_head->duration % 60;
+                fprintf(fp, "\t%d. %s %d:%d\n", k, duration_head->songName, hour, min);
+                duration_head = duration_head->duration_next;
+                k++;
+            }
+
+            fclose (fp);
+            printf("Output is printed to the file %s\n", input);
+        }else if(choice == 5){
+            return;
+        }
+    }
 }
 
 void readFile(){
@@ -273,8 +369,6 @@ void readFile(){
 
 
     fclose(fPointer);
-
-    printList(chrono_head, alpha_head, duration_head);
 }
 
 int main() {
