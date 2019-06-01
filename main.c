@@ -11,8 +11,10 @@ struct song{
     struct song * random_next;
 } typedef song;
 
+//roots
 song * chrono_head = NULL, * alpha_head = NULL, * duration_head = NULL, * random_head = NULL;
 
+//insert methods
 void insertChrono(char name[], int duration, song ** root){
     if((*root) == NULL){
         *root = malloc(sizeof(song));
@@ -93,6 +95,13 @@ song * insertDuration(song * root, char name[], int duration){
     return root;
 }
 
+void insertNode(char name[], int duration){
+    insertChrono(name, duration, &chrono_head);
+    alpha_head = insertAlpha(alpha_head, name, duration);
+    duration_head = insertDuration(duration_head, name, duration);
+}
+
+//delete methods
 void deleteNodeChrono(song ** ch_root, char name[]){
     song *iter = (*ch_root);
     song *temp;
@@ -174,6 +183,7 @@ void deleteNode(char name[]){
     deleteNodeDuration(&duration_head, name);
 }
 
+//print methods
 void printList(song* ch, song* alp, song* dur){
     int i = 1;
     int hour = 0;
@@ -218,42 +228,59 @@ void printChoice(){
 
 }
 
+void readFile(){
+    FILE * fPointer;
+    fPointer = fopen("songs.txt", "r");
+    char singleLine[150];
+    char songName[25];
+    char duration[10];
+    char hour[3];
+    char min[3];
+    int h;
+    int m;
+    int dur;
+    char hourSingle[2];
+    char minSingle[2];
+
+    while ( fgets ( singleLine, sizeof singleLine, fPointer ) != NULL ){
+        if(singleLine != "\n"){
+            char *piece = strtok(singleLine, "\t");
+            strcpy(songName, piece);
+            piece = strtok(NULL, "\t");
+            strcpy(duration, piece);
+            char *secondPiece = strtok(piece, ":");
+            strcpy(hour, secondPiece);
+            secondPiece = strtok(NULL, ":");
+            strcpy(min, secondPiece);
+            if(hour[0]== '0'){
+                hourSingle[0] = hour[1];
+                hourSingle[1] = '\0';
+                h = atoi(hourSingle);
+            }else{
+                h = atoi(hour);
+            }
+            if(min[0]== '0'){
+                minSingle[0] = min[1];
+                minSingle[1] = '\0';
+                m = atoi(minSingle);
+            }else{
+                m = atoi(min);
+            }
+            dur = (60*h)+m;
+            insertNode(songName, dur);
+        }
+    }
+
+
+    fclose(fPointer);
+
+    printList(chrono_head, alpha_head, duration_head);
+}
 
 int main() {
-    insertChrono("poker face", 260, &chrono_head);
-    insertChrono("ufo 361", 60, &chrono_head);
-    insertChrono("ahmet", 130, &chrono_head);
-//    printList(chrono_head);
-    deleteNodeChrono(&chrono_head, "ufo 361");
-//    printList(chrono_head);
 
-
-    alpha_head = insertAlpha( alpha_head, "berk", 260);
-    alpha_head = insertAlpha(alpha_head, "ahmet", 260);
-    alpha_head = insertAlpha(alpha_head, "bayhan", 260);
-    alpha_head = insertAlpha(alpha_head, "ali", 260);
-    alpha_head = insertAlpha(alpha_head, "ceyhun", 260);
-    alpha_head = insertAlpha(alpha_head, "zafer", 260);
-//    printList(alpha_head);
-    deleteNodeAlpha(&alpha_head, "zafer");
-    printf("*******\n");
-//    printList(alpha_head);
-
-
-    duration_head = insertDuration(duration_head, "berk", 260);
-    duration_head = insertDuration(duration_head, "zafer", 60);
-    duration_head = insertDuration(duration_head, "ahmet", 360);
-    duration_head = insertDuration(duration_head, "bayhan", 100);
-    duration_head = insertDuration(duration_head, "ali", 10);
-    duration_head = insertDuration(duration_head, "asli", 70);
-//    printList(duration_head);
-//    deleteNodeDuration(&duration_head, "ahmet");
-    printf("*******\n");
-//    printList(duration_head);
-
-    printList(chrono_head, alpha_head, duration_head);
-    deleteNode("ahmet");
-    printList(chrono_head, alpha_head, duration_head);
+    readFile();
+    printChoice();
 
     return 0;
 }
