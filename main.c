@@ -434,8 +434,13 @@ void printChoice(){
             printf("Enter a file name:\n");
             gets(input);
             FILE * fp;
-            int i;
             fp = fopen (input, "w");
+
+            //temps
+            song* chrono_temp = chrono_head;
+            song* alpha_temp = alpha_head;
+            song* dur_temp = duration_head;
+
 
             int k = 1;
             int hour = 0;
@@ -491,6 +496,10 @@ void printChoice(){
 
             fclose (fp);
             printf("Output is printed to the file %s\n", input);
+            chrono_head = chrono_temp;
+            alpha_head = alpha_temp;
+            duration_head = dur_temp;
+
         }else if(choice == 5){
             return;
         }
