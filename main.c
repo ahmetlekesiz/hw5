@@ -1,6 +1,10 @@
+//Ahmet Lekesiz - 150118509
+//Computer Programming - Homework 5
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 struct song{
     char songName[25];
@@ -13,6 +17,9 @@ struct song{
 
 //roots
 song * chrono_head = NULL, * alpha_head = NULL, * duration_head = NULL, * random_head = NULL;
+
+char randomName[25];
+int randomDuration;
 
 //insert methods
 void insertChrono(char name[], int duration, song ** root){
@@ -95,10 +102,30 @@ song * insertDuration(song * root, char name[], int duration){
     return root;
 }
 
+void insertRandom(char name[], int duration, song ** root){
+    if((*root) == NULL){
+        *root = malloc(sizeof(song));
+        (*root)->duration = duration;
+        strcpy((*root)->songName, name);
+        (*root)->random_next = NULL;
+    }else{
+        song *iter = *root;
+        //find the tail for chrono
+        while(iter->random_next != NULL){
+            iter = iter->random_next;
+        }
+        iter->random_next= malloc(sizeof(song));
+        iter->random_next->duration = duration;
+        strcpy(iter->random_next->songName, name);
+        iter->random_next->random_next = NULL;
+    }
+}
+
 void insertNode(char name[], int duration){
     insertChrono(name, duration, &chrono_head);
     alpha_head = insertAlpha(alpha_head, name, duration);
     duration_head = insertDuration(duration_head, name, duration);
+    insertRandom(name, duration, &random_head);
 }
 
 //delete methods
@@ -177,14 +204,138 @@ void deleteNodeDuration(song ** duration_root, char name[]){
     free(temp);
 }
 
+void deleteNodeRandom(song ** ch_root, char name[]){
+    song *iter = (*ch_root);
+    song *temp;
+
+    //check if the root and name is same
+    if(strcmp((*ch_root)->songName, name) == 0){
+        temp = (*ch_root);
+        *ch_root = (*ch_root)->random_next;
+        free(temp);
+        return;
+    }
+
+    while(iter != NULL && strcmp(iter->random_next->songName, name)!=0){
+        iter = iter->random_next;
+    }
+    if(iter->random_next == NULL){
+        printf("there is no song like that");
+        return;
+    }
+
+    temp = iter->random_next;
+    iter->random_next = iter->random_next->random_next;
+    free(temp);
+}
+
 void deleteNode(char name[]){
     deleteNodeChrono(&chrono_head, name);
     deleteNodeAlpha(&alpha_head, name);
     deleteNodeDuration(&duration_head, name);
+    deleteNodeRandom(&random_head, name);
+}
+
+void push(song** head, char name[], int duration)
+{
+    // Allocate the new Node in the heap and set its data
+    song* newNode = (song*)malloc(sizeof(song));
+    strcpy(newNode->songName, name);
+    newNode->duration = duration;
+
+    // Set the .next pointer of the new Node to point to the current
+    // first node of the list.
+    newNode->random_next = *head;
+
+    // Change the head pointer to point to the new Node, so it is
+    // now the first node in the list.
+    *head = newNode;
+}
+song* CopyList(song* head)
+{
+    song* current = head;	// used to iterate over original list
+    song* newList = NULL; // head of the new list
+    song* tail = NULL;	// point to last node in new list
+
+    while (current != NULL)
+    {
+        // special case for the first new Node
+        if (newList == NULL)
+        {
+            newList = (song*)malloc(sizeof(song));
+            strcpy(newList->songName, current->songName);
+            newList->duration = current->duration;
+            newList->random_next = NULL;
+            tail = newList;
+        }
+        else
+        {
+            tail->random_next = (song*)malloc(sizeof(song));
+            tail = tail->random_next;
+            strcpy(tail->songName, current->songName);
+            tail->duration = current->duration;
+            tail->random_next = NULL;
+        }
+        current = current->random_next;
+    }
+
+    return newList;
+}
+int listSize(song * random_head){
+    int counter = 0;
+    while(random_head!=NULL){
+        counter++;
+        random_head = random_head->random_next;
+    }
+    return counter;
 }
 
 //print methods
-void printList(song* ch, song* alp, song* dur){
+void randomSong(song * random_head){
+    char songName[25];
+    int duration;
+    if (random_head == NULL)
+        return;
+    srand(time(NULL));
+
+    strcpy(songName, random_head->songName);
+    duration = random_head->duration;
+    song *current = random_head;
+    int n;
+    for (n=2; current!=NULL; n++){
+        if (rand() % n == 0){
+            strcpy(songName, current->songName);
+            duration = current->duration;
+        }
+        current = current->random_next;
+    }
+    strcpy(randomName, songName);
+    randomDuration = duration;
+}
+
+void printRandom(song* random_head){
+    int size = listSize(random_head);
+    song* temp = CopyList(random_head);
+
+    printf("The list in random order:\n");
+
+    int i = 1;
+    int hour = 0;
+    int min = 0;
+    while(i<=size){
+        randomSong(temp);
+        char name[25];
+        strcpy(name, randomName);
+        int duration = randomDuration;
+        hour = duration / 60;
+        min = duration % 60;
+        printf("\t%d. %s %d:%d\n", i, name, hour, min);
+        deleteNodeRandom(&temp, name);
+        i++;
+    }
+}
+
+void printList(song* ch, song* alp, song* dur, song* random_head){
     int i = 1;
     int hour = 0;
     int min = 0;
@@ -216,6 +367,8 @@ void printList(song* ch, song* alp, song* dur){
         dur = dur->duration_next;
         i++;
     }
+
+    printRandom(random_head);
 }
 
 void printChoice(){
@@ -276,7 +429,7 @@ void printChoice(){
             gets(input);
             deleteNode(input);
         }else if(choice == 3){
-            printList(chrono_head, alpha_head, duration_head);
+            printList(chrono_head, alpha_head, duration_head, random_head);
         }else if(choice == 4){
             printf("Enter a file name:\n");
             gets(input);
@@ -314,6 +467,26 @@ void printChoice(){
                 fprintf(fp, "\t%d. %s %d:%d\n", k, duration_head->songName, hour, min);
                 duration_head = duration_head->duration_next;
                 k++;
+            }
+
+            int size = listSize(random_head);
+            song* temp = CopyList(random_head);
+
+            fprintf(fp, "The list in random order:\n");
+
+            int o = 1;
+            int ho = 0;
+            int mi = 0;
+            while(o<=size){
+                randomSong(temp);
+                char name[25];
+                strcpy(name, randomName);
+                int duration = randomDuration;
+                ho = duration / 60;
+                mi = duration % 60;
+                fprintf(fp, "\t%d. %s %d:%d\n", o, name, ho, mi);
+                deleteNodeRandom(&temp, name);
+                o++;
             }
 
             fclose (fp);
