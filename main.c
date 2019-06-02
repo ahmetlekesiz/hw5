@@ -1,11 +1,13 @@
 //Ahmet Lekesiz - 150118509
 //Computer Programming - Homework 5
 
+//includes
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+//struct
 struct song{
     char songName[25];
     int duration;
@@ -18,6 +20,7 @@ struct song{
 //roots
 song * chrono_head = NULL, * alpha_head = NULL, * duration_head = NULL, * random_head = NULL;
 
+//global random variables for printig shuffle list.
 char randomName[25];
 int randomDuration;
 
@@ -122,6 +125,7 @@ void insertRandom(char name[], int duration, song ** root){
 }
 
 void insertNode(char name[], int duration){
+    //this method combine all the insert methods.
     insertChrono(name, duration, &chrono_head);
     alpha_head = insertAlpha(alpha_head, name, duration);
     duration_head = insertDuration(duration_head, name, duration);
@@ -230,6 +234,7 @@ void deleteNodeRandom(song ** ch_root, char name[]){
 }
 
 void deleteNode(char name[]){
+    //this method combine all delete methods.
     deleteNodeChrono(&chrono_head, name);
     deleteNodeAlpha(&alpha_head, name);
     deleteNodeDuration(&duration_head, name);
@@ -251,6 +256,7 @@ void push(song** head, char name[], int duration)
     // now the first node in the list.
     *head = newNode;
 }
+
 song* CopyList(song* head)
 {
     song* current = head;	// used to iterate over original list
@@ -281,6 +287,7 @@ song* CopyList(song* head)
 
     return newList;
 }
+
 int listSize(song * random_head){
     int counter = 0;
     while(random_head!=NULL){
@@ -336,6 +343,7 @@ void printRandom(song* random_head){
 }
 
 void printList(song* ch, song* alp, song* dur, song* random_head){
+    //this method combines print methods.
     int i = 1;
     int hour = 0;
     int min = 0;
@@ -506,6 +514,7 @@ void printChoice(){
     }
 }
 
+//method for reading songs from file.txt.
 void readFile(){
     FILE * fPointer;
     fPointer = fopen("songs.txt", "r");
@@ -553,6 +562,7 @@ void readFile(){
     fclose(fPointer);
 }
 
+//main method.
 int main() {
 
     readFile();
